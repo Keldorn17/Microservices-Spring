@@ -2,6 +2,7 @@ package com.keldorn.productservice.service;
 
 import com.keldorn.productservice.dto.ProductRequest;
 import com.keldorn.productservice.dto.ProductResponse;
+import com.keldorn.productservice.mapper.ProductMapper;
 import com.keldorn.productservice.model.Product;
 import com.keldorn.productservice.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import java.util.List;
 @Slf4j
 public class ProductService {
     private final ProductRepository productRepository;
+    private final ProductMapper productMapper;
 
     public ProductResponse createProduct(ProductRequest productRequest) {
         Product product = Product.builder()
@@ -24,15 +26,13 @@ public class ProductService {
                 .build();
         productRepository.save(product);
         log.info("Product created successfully");
-        return new ProductResponse(product.getId(), product.getName(),
-                product.getDescription(), product.getPrice());
+        return productMapper.toResponse(product);
     }
 
     public List<ProductResponse> getAllProducts() {
         return productRepository.findAll()
                 .stream()
-                .map(product -> new ProductResponse(product.getId(), product.getName(),
-                        product.getDescription(), product.getPrice()))
+                .map(productMapper::toResponse)
                 .toList();
     }
 }
