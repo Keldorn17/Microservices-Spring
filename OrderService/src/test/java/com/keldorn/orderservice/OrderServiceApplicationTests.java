@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Import;
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class OrderServiceApplicationTests {
-
     @LocalServerPort
     private Integer port;
 
@@ -25,7 +24,7 @@ class OrderServiceApplicationTests {
     void shouldSubmitOrder() {
         String submitOrderJson = """
                 {
-                     "skuCode": "iphone_16",
+                     "skuCode": "iphone_15",
                      "price": 1000,
                      "quantity": 1
                 }
@@ -37,9 +36,10 @@ class OrderServiceApplicationTests {
                 .when()
                 .post("/api/order")
                 .then()
+                .log().all()
                 .statusCode(201)
                 .body("orderNumber", Matchers.notNullValue())
-                .body("skuCode", Matchers.equalTo("iphone_16"))
+                .body("skuCode", Matchers.equalTo("iphone_15"))
                 .body("price", Matchers.equalTo(1000))
                 .body("quantity", Matchers.equalTo(1));
     }

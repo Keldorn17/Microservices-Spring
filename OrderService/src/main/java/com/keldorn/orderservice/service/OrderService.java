@@ -1,5 +1,6 @@
 package com.keldorn.orderservice.service;
 
+import com.keldorn.orderservice.client.InventoryClient;
 import com.keldorn.orderservice.dto.OrderRequest;
 import com.keldorn.orderservice.dto.OrderResponse;
 import com.keldorn.orderservice.mapper.OrderMapper;
@@ -16,14 +17,20 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
+    private final InventoryClient inventoryClient;
 
     public OrderResponse placeOrder(OrderRequest request) {
-        Order order = Order.builder()
-                .orderNumber(UUID.randomUUID().toString())
-                .price(request.price())
-                .skuCode(request.skuCode())
-                .quantity(request.quantity())
-                .build();
-        return orderMapper.toResponse(orderRepository.save(order));
+        var isProductInStock = inventoryClient.isInStock(request.skuCode(), request.quantity());
+
+        if (isProductInStock.result()) {
+            Order order = Order.builder()
+                    .orderNumber(UUID.randomUUID().toString())
+                    .price(request.price())
+                    .skuCode(request.skuCode())
+                    .quantity(request.quantity())
+                    .build();
+            return orderMapper.toResponse(orderRepository.save(order));
+        }
+        throw new RuntimeException("Product with SkuCode " + request.skuCode() + " is not in stock");
     }
 }
